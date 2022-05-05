@@ -58,9 +58,9 @@ def zero_cross_rate(signal, frame_length=512, step=128):
         zcr 过零率一维数组
     """
     wlen = len(signal)
-    frameNum = math.ceil(wlen / step)
-    zcr = np.zeros((frameNum, 1))
-    for i in range(frameNum):
+    numOfFrames = np.asarray(np.ceil((wlen - frame_length) / step) + 1, dtype=int)
+    zcr = np.zeros((numOfFrames, 1))
+    for i in range(numOfFrames):
         curFrame = signal[np.arange(i * step, min(i * step + frame_length, wlen))]
         curFrame = curFrame - np.mean(curFrame)  # zero-justified
         zcr[i] = sum(curFrame[0:-1] * curFrame[1::] <= 0)
