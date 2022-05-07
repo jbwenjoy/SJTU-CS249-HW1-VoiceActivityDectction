@@ -57,11 +57,12 @@ def zero_cross_rate(signal, frame_length=512, step=128):
     返回：
         zcr 过零率一维数组
     """
-    wlen = len(signal)
-    numOfFrames = np.asarray(np.ceil((wlen - frame_length) / step) + 1, dtype=int)
+
+    L = len(signal)
+    numOfFrames = np.asarray(np.ceil((L - frame_length) / step) + 1, dtype=int)
     zcr = np.zeros((numOfFrames, 1))
     for i in range(numOfFrames):
-        curFrame = signal[np.arange(i * step, min(i * step + frame_length, wlen))]
+        curFrame = signal[np.arange(i * step, min(i * step + frame_length, L))]
         curFrame = curFrame - np.mean(curFrame)  # zero-justified
         zcr[i] = sum(curFrame[0:-1] * curFrame[1::] <= 0)
     return zcr
@@ -146,7 +147,7 @@ label_data = vad.read_label_from_file(label_path + "/dev_label.txt")
 # 读取文件夹
 files = os.listdir(wav_path)
 
-result = []
+result_energy = []
 label = []
 
 print("\nProcessing dev data...\n")
@@ -180,26 +181,26 @@ for file in files:
     #     result.append(sort_by_thres(0.648, energy[i]))
 
     for i in range(num_of_steps):
-        result.append(energy[i])
+        result_energy.append(energy[i])
 
 # vad.parse_vad_label(label)
 # print(len(result))
 # print(len(vad.parse_vad_label(label)))
 # print(len(label))
 print("\nCalculating AUC, EER, TPR, FPR, Threshold of dev dataset...\n")
-auc, eer, tpr, fpr, thres = eva.get_metrics(result, label)
+auc, eer, tpr, fpr, thres = eva.get_metrics(result_energy, label)
 print("AUC = ", auc)
 print("EER = ", eer)
 print("TPR = ", tpr)
 print("FPR = ", fpr)
 print("Threshold = ", thres)
 
-result2 = []
-for i in range(len(result)):
-    result2.append(sort_by_thres(thres, result[i]))
+result2_energy = []
+for i in range(len(result_energy)):
+    result2_energy.append(sort_by_thres(thres, result_energy[i]))
 
 print("\nCalculating ACC...\n")
-acc = get_acc(result2, label)
+acc = get_acc(result2_energy, label)
 print("ACC = ", acc)
 
 
@@ -207,7 +208,7 @@ plt.plot(fpr, tpr)
 plt.xlabel("FPR")
 plt.ylabel("TPR")
 plt.title("ROC")
-plt.savefig("ROC.png")
+plt.savefig("task1_ROC_dev.png")
 plt.show()
 
 
